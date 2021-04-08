@@ -3,3 +3,6 @@
 
 # exclude frontend managed in extra projekt
 dkan-demo/src/frontend/*
+
+# exclude vendors -> files are generated
+dkan-demo/vendor/*
