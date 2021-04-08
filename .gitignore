@@ -1,0 +1,2 @@
+# docroot contains dkan and dupral core files see https://getdkan.github.io/dkan-tools/#structure/
+/dkan-demo/docroot/* 
