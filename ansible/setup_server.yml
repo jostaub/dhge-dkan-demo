@@ -1,0 +1,72 @@
+---
+- name: setup aws unbuntu server for dkan demo
+  hosts: all
+  become: yes
+
+  vars:
+    dktl_install_path: "/opt"
+    docker_user: "ubuntu"
+
+  tasks:
+    - name: remove old packages
+      apt:
+        name:
+          - docker
+          - docker-engine
+          - docker.io
+          - containerd
+          - runc
+        state: absent
+      
+    - name: install packages for https repo
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        update_cache: yes
+        state: latest
+
+    - name: add gpg key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add docker repo
+      apt_repository:
+        repo: "deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: install docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose
+        update_cache: yes
+        state: latest
+
+    - name: add docker group
+      group:
+        name: docker 
+        state: present
+
+    - name: adding existing user '{{ docker_user }}' to group docker
+      user:
+        name: '{{ docker_user }}'
+        groups: docker
+        append: yes
+
+    - name: download dktl cli tool 
+      git:
+        repo: 'https://github.com/GetDKAN/dkan-tools.git'
+        dest: '{{ dktl_install_path }}/dkan-tools'
+    
+    - name: add symlink to /usr/local/bin 
+      file:
+        src: "{{ dktl_install_path }}/dkan-tools/bin/dktl"
+        dest: /usr/local/bin/dktl
+        state: link
