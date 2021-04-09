@@ -6,3 +6,6 @@ dkan-demo/src/frontend/*
 
 # exclude vendors -> files are generated
 dkan-demo/vendor/*
+
+# exclude my ansible hosts file
+dhge-dkan-demo/ansible/hosts
