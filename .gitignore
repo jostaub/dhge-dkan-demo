@@ -8,4 +8,4 @@ dkan-demo/src/frontend/*
 dkan-demo/vendor/*
 
 # exclude my ansible hosts file
-dhge-dkan-demo/ansible/hosts
+ansible/hosts
