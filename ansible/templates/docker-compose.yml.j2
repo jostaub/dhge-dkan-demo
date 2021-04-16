@@ -15,17 +15,32 @@ services:
       - "traefik.enable=true"
       - "traefik.frontend.passHostHeader=true" #``, 
       - "traefik.http.routers.dkan-frontend.rule=Host(`{{ inventory_hostname }}`) && (Path(`/`, `/search`,`/api`,`/about`,`/publishers`) || PathPrefix(`/static`))"
-      - "traefik.http.routers.dkan-frontend.priority=2"
-{% if not dkan_is_dev %}
-      - "traefik.http.routers.dkan-frontend.entryPoints=websecure"
-      - "traefik.http.routers.dkan-frontend.tls=true"
-      - "traefik.http.routers.dkan-frontend.tls.certresolver=dhgeresolver"
-{% else %}
-      - "traefik.http.routers.dkan-frontend.entryPoints=web"
-{% endif %}
+      - "traefik.http.routers.dkan-frontend.priority=3"
+      - "traefik.http.routers.dkan-frontend.entryPoints=websecure, web"
 
     depends_on:
       - web
+
+    networks:
+      - {{ dkan_network_name }}
+
+  demo-files:
+    hostname: demoweb
+    image: nginx
+    ports:
+      - "8099:80"
+
+    volumes:
+      - "{{ dkan_container_config_path }}/demo:/usr/share/nginx/html"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.http.routers.demo-files.rule=Host(`{{ inventory_hostname }}`) && PathPrefix(`/demo-files`)"
+      - "traefik.http.routers.demo-files.priority=2"
+      - "traefik.http.middlewares.stripdemo.stripprefix.prefixes=/demo-files"
+      - "traefik.http.routers.demo-files.middlewares=stripdemo"
+      - "traefik.http.routers.demo-files.entryPoints=websecure, web"
 
     networks:
       - {{ dkan_network_name }}
@@ -52,13 +67,7 @@ services:
       - "traefik.frontend.passHostHeader=true"
       - "traefik.http.routers.dkan-backend.rule=Host(`{{ inventory_hostname }}`)"
       - "traefik.http.routers.dkan-backend.priority=1"
-{% if not dkan_is_dev %}
-      - "traefik.http.routers.dkan-backend.entryPoints=websecure"
-      - "traefik.http.routers.dkan-backend.tls=true"
-      - "traefik.http.routers.dkan-backend.tls.certresolver=dhgeresolver"
-{% else %}
-      - "traefik.http.routers.dkan-backend.entryPoints=web"
-{% endif %}
+      - "traefik.http.routers.dkan-backend.entryPoints=websecure, web"
 
     depends_on:
       - db
