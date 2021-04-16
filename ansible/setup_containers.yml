@@ -58,6 +58,11 @@
         src: traefik.yml.j2
         dest: "{{ dkan_container_config_path }}/traefik.yml"
       register: config_change
+
+    - name: copy demo files
+      copy: 
+        src: demo
+        dest: "{{ dkan_container_config_path }}"
   
     - name: setup docker-compose
       template:
