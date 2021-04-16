@@ -1,0 +1,31 @@
+api:
+  dashboard: {{ dkan_is_dev|default('false') }}
+  insecure: {{ dkan_is_dev|default('false') }}
+
+providers:
+  docker:
+    exposedByDefault: false
+
+
+entryPoints:
+  web:
+    address: ":80"
+{% if not dkan_is_dev %}
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+{% endif %}
+
+  websecure:
+    address: ":443"
+
+
+certificatesResolvers:
+  dhgeresolver:
+    acme:
+      email: {{ lets_encrypt_certificate_email }}
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web

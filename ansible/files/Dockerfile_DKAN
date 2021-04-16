@@ -1,0 +1,6 @@
+# need to pin version because dkan dos not run on the newer ones
+FROM drupal:9.0.11
+
+# install dupral and drush
+RUN COMPOSER_MEMORY_LIMIT=-1 composer require 'getdkan/dkan'; \
+    COMPOSER_MEMORY_LIMIT=-1 composer require 'drush/drush' 

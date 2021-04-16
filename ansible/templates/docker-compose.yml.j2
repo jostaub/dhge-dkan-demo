@@ -1,0 +1,88 @@
+# Common Docker Container configuration
+version: "2"
+services:
+
+  frontend:
+    hostname: frontend
+    build:
+      context: .
+      dockerfile: Dockerfile_Frontend
+    image: dkanreactfrontend
+    ports:
+      - "8088:80"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true" #``, 
+      - "traefik.http.routers.dkan-frontend.rule=Host(`{{ inventory_hostname }}`) && (Path(`/`, `/search`,`/api`,`/about`,`/publishers`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.dkan-frontend.priority=2"
+{% if not dkan_is_dev %}
+      - "traefik.http.routers.dkan-frontend.entryPoints=websecure"
+      - "traefik.http.routers.dkan-frontend.tls=true"
+      - "traefik.http.routers.dkan-frontend.tls.certresolver=dhgeresolver"
+{% else %}
+      - "traefik.http.routers.dkan-frontend.entryPoints=web"
+{% endif %}
+
+    depends_on:
+      - web
+
+    networks:
+      - {{ dkan_network_name }}
+
+  web:
+    hostname: web
+    build:
+      context: .
+      dockerfile: Dockerfile_DKAN
+    image: dkanweb
+    ports:
+      - "8077:80"
+      - "443"
+      - "8888"
+    #volumes:
+      #- "{{ dkan_demo_path }}/dkan-demo:/var/www/:delegated"
+      #- "/home/staub/Desktop/dhge-dkan-demo/dkan-demo:/var/www/:delegated"
+
+    env_file:
+      - "{{ dkan_container_config_path }}/mysql.env"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.http.routers.dkan-backend.rule=Host(`{{ inventory_hostname }}`)"
+      - "traefik.http.routers.dkan-backend.priority=1"
+{% if not dkan_is_dev %}
+      - "traefik.http.routers.dkan-backend.entryPoints=websecure"
+      - "traefik.http.routers.dkan-backend.tls=true"
+      - "traefik.http.routers.dkan-backend.tls.certresolver=dhgeresolver"
+{% else %}
+      - "traefik.http.routers.dkan-backend.entryPoints=web"
+{% endif %}
+
+    depends_on:
+      - db
+
+    networks:
+      - {{ dkan_network_name }}
+
+  db:
+    hostname: db
+    image: mariadb
+    ports:
+      - "3306"
+
+    env_file:
+      - "{{ dkan_container_config_path }}/mysql.env"
+
+    volumes:
+      - dkan-database:/var/lib/mysql
+    
+    networks:
+      - {{ dkan_network_name }}
+
+volumes:
+  dkan-database:
+
+networks:
+  {{ dkan_network_name }}:

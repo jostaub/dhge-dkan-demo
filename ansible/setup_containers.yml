@@ -1,0 +1,112 @@
+---
+- name: setup containers on server
+  hosts: localhost
+  become: yes
+
+  vars:
+    dkan_is_dev: yes
+
+    dkan_container_config_path: "/opt/dkan-container-configs"
+    dkan_demo_path: "/opt/dkan-demo-projekt"
+    dkan_network_name: "dkan_network"
+
+    frontend_git_repo: "https://github.com/jostaub/dhge-dkan-demo-frontend.git"
+    lets_encrypt_certificate_email: "{{ lookup('env', 'trae_mail') }}"
+
+    # use ansible vault or env var in prod.
+    mysql_config:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: 123password
+      MYSQL_DATABASE: drupal
+
+  tasks:
+    - name: create container config folder
+      file:
+        path: "{{ dkan_container_config_path }}"
+        state: directory
+
+    - name: clone frontend
+      git:
+        repo: "{{ frontend_git_repo }}"
+        dest: "{{ dkan_container_config_path }}/frontend"
+        update: yes
+      register: frontend_update
+
+    - name: setup DKAN docker file
+      copy:
+        src: Dockerfile_DKAN
+        dest: "{{ dkan_container_config_path }}/Dockerfile_DKAN"
+
+    - name: setup DKAN frontend docker file
+      copy:
+        src: Dockerfile_Frontend
+        dest: "{{ dkan_container_config_path }}/Dockerfile_Frontend"
+
+    - name: setup nginx config file
+      copy:
+        src: nginx.conf
+        dest: "{{ dkan_container_config_path }}/nginx.conf"
+
+    - name: setup mysql env config
+      template:
+        src: mysql.env.j2
+        dest: "{{ dkan_container_config_path }}/mysql.env"
+
+    - name: setup static traefik conf 
+      template:
+        src: traefik.yml.j2
+        dest: "{{ dkan_container_config_path }}/traefik.yml"
+      register: config_change
+  
+    - name: setup docker-compose
+      template:
+        src: docker-compose.yml.j2
+        dest: "{{ dkan_container_config_path }}/docker-compose.yml" 
+      register: compose_change
+
+    - name: start dkan containers 
+      docker_compose:
+        project_src: "{{ dkan_container_config_path }}"
+        state: present
+
+    - name: create traefik router
+      docker_container:
+        name: dkan-traefik-router
+        image: traefik
+        container_default_behavior: compatibility
+        volumes:
+          - "{{ dkan_container_config_path }}/traefik.yml:/etc/traefik/traefik.yml"
+          - "/var/run/docker.sock:/var/run/docker.sock"
+        ports:
+          - 8080:8080
+          - 80:80
+          - 443:443
+        networks:
+          - name: "dkan-container-configs_{{ dkan_network_name }}"
+        
+        restart: "{{ config_change.changed or compose_change.changed }}"
+      retries: 3
+      delay: 5
+
+    # - name: Check if website is allready setup
+    #   uri:
+    #     url: "http://{{ inventory_hostname }}:8077"
+    #     return_content: no
+    #     status_code:
+    #       - 200
+    #       - 302
+    #   register: url_check_result
+    #   retries: 10
+    #   delay: 10
+
+    # # to much work to automate
+    # - name: Wait for user Configuration
+    #   pause:
+    #     prompt: "Please configure website at http://{{ inventory_hostname }} . When ready Type something to continue"
+    #   when: url_check_result.redirected
+
+    # - name: enable dkan on site
+    #   shell: "docker exec dkan-container-configs_web_1 /bin/bash -c 'drush en dkan config_update_ui -y'"
+    #   when: url_check_result.redirected
+           
