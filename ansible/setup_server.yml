@@ -6,6 +6,7 @@
   vars:
     dktl_install_path: "/opt"
     docker_user: "ubuntu"
+    install_dktl: no
 
   tasks:
     - name: remove old packages
@@ -64,9 +65,11 @@
       git:
         repo: 'https://github.com/GetDKAN/dkan-tools.git'
         dest: '{{ dktl_install_path }}/dkan-tools'
+      when: install_dktl
     
     - name: add symlink to /usr/local/bin 
       file:
         src: "{{ dktl_install_path }}/dkan-tools/bin/dktl"
         dest: /usr/local/bin/dktl
         state: link
+      when: install_dktl
