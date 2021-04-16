@@ -20,7 +20,11 @@ entryPoints:
 
   websecure:
     address: ":443"
-
+{% if not dkan_is_dev %}
+    http:
+      tls:
+        certresolver: dhgeresolver
+{% endif %}
 
 certificatesResolvers:
   dhgeresolver:
