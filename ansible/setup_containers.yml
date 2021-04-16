@@ -91,8 +91,6 @@
           - name: "dkan-container-configs_{{ dkan_network_name }}"
         
         restart: "{{ config_change.changed or compose_change.changed }}"
-      retries: 3
-      delay: 5
 
     # - name: Check if website is allready setup
     #   uri:
