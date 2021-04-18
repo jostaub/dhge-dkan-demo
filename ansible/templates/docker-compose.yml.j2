@@ -13,8 +13,9 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.passHostHeader=true" #``, 
-      - "traefik.http.routers.dkan-frontend.rule=Host(`{{ inventory_hostname }}`) && (Path(`/`, `/search`,`/api`,`/about`,`/publishers`) || PathPrefix(`/static`))"
+      - "traefik.frontend.passHostHeader=true"
+      # there are better ways to solve this but this is the fastest
+      - "traefik.http.routers.dkan-frontend.rule=Host(`{{ inventory_hostname }}`) && (Path(`/`, `/search`,`/api`,`/about`,`/publishers`, `/service-worker.js`, `/robots.txt`, `/favicon.ico`, `/asset-manifest.json`, `/manifest.json`, `/dkan-avatar-blue.png`) || PathPrefix(`/static`, `/logo`))"
       - "traefik.http.routers.dkan-frontend.priority=3"
       - "traefik.http.routers.dkan-frontend.entryPoints=websecure, web"
 
@@ -55,9 +56,10 @@ services:
       - "8077:80"
       - "443"
       - "8888"
-    #volumes:
-      #- "{{ dkan_demo_path }}/dkan-demo:/var/www/:delegated"
-      #- "/home/staub/Desktop/dhge-dkan-demo/dkan-demo:/var/www/:delegated"
+    volumes:
+      - "dupral-profiles:/var/www/html/profiles"
+      - "dupral-sites:/var/www/html/sites"
+      - "dupral-modules:/var/www/html/modules"
 
     env_file:
       - "{{ dkan_container_config_path }}/mysql.env"
@@ -92,6 +94,9 @@ services:
 
 volumes:
   dkan-database:
+  dupral-profiles:
+  dupral-sites:
+  dupral-modules:
 
 networks:
   {{ dkan_network_name }}:
