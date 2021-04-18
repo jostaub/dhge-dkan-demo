@@ -1,10 +1,10 @@
 ---
 - name: setup containers on server
-  hosts: localhost
+  hosts: all
   become: yes
 
   vars:
-    dkan_is_dev: yes
+    dkan_is_dev: no
 
     dkan_container_config_path: "/opt/dkan-container-configs"
     dkan_demo_path: "/opt/dkan-demo-projekt"
@@ -75,11 +75,12 @@
         project_src: "{{ dkan_container_config_path }}"
         state: present
 
-    - name: create traefik router
+    - name: start traefik router
       docker_container:
         name: dkan-traefik-router
         image: traefik
         container_default_behavior: compatibility
+        restart_policy: always
         volumes:
           - "{{ dkan_container_config_path }}/traefik.yml:/etc/traefik/traefik.yml"
           - "/var/run/docker.sock:/var/run/docker.sock"
@@ -92,24 +93,25 @@
         
         restart: "{{ config_change.changed or compose_change.changed }}"
 
-    # - name: Check if website is allready setup
-    #   uri:
-    #     url: "http://{{ inventory_hostname }}:8077"
-    #     return_content: no
-    #     status_code:
-    #       - 200
-    #       - 302
-    #   register: url_check_result
-    #   retries: 10
-    #   delay: 10
+    - name: Check if website is allready setup
+      uri:
+        url: "https://{{ inventory_hostname }}/test"
+        return_content: no
+        status_code:
+          - 200
+          - 302
+          - 404
+      register: url_check_result
+      retries: 10
+      delay: 10
 
-    # # to much work to automate
-    # - name: Wait for user Configuration
-    #   pause:
-    #     prompt: "Please configure website at http://{{ inventory_hostname }} . When ready Type something to continue"
-    #   when: url_check_result.redirected
+    # to much work to automate
+    - name: Wait for user Configuration
+      pause:
+        prompt: "Please configure website at https://{{ inventory_hostname }}/core/install.php. When ready Type something to continue"
+      when: url_check_result.redirected
 
-    # - name: enable dkan on site
-    #   shell: "docker exec dkan-container-configs_web_1 /bin/bash -c 'drush en dkan config_update_ui -y'"
-    #   when: url_check_result.redirected
+    - name: enable dkan on site
+      shell: "docker exec dkan-container-configs_web_1 /bin/bash -c 'drush en dkan config_update_ui -y'"
+      when: url_check_result.redirected
            
