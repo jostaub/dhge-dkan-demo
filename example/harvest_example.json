@@ -1,0 +1,9 @@
+{
+  "identifier": "Example-Gesundheilt",
+  "extract": {
+    "type": "\\Harvest\\ETL\\Extract\\DataJson",
+    "uri": "https://dkan.dhge-web.de/demo-files/data.json"
+  },
+  "transforms": [],
+  "load": { "type": "\\Drupal\\dkan_harvest\\Load\\Dataset" }
+}

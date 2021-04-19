@@ -1,0 +1,35 @@
+{
+  "@context": "https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld",
+  "@id": "http://dkan/data.json",
+  "@type": "dcat:Catalog",
+  "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
+  "describedBy": "https://project-open-data.cio.gov/v1.1/schema/catalog.json",
+  "dataset": [
+    {
+      "@type": "dcat:Dataset",
+      "title": " SARS-CoV-2 Infektionszahlen",
+      "identifier": "test-identifier-129378asd94xkq3fo8123",
+      "description": "Aktuelle Zahlen zur Corona verbreitung in Erfurt",
+      "accessLevel": "public",
+      "accrualPeriodicity": "R/P10Y",
+      "issued": "03.05.2020",
+      "modified": "19.04.2021",
+      "publisher": { "@type": "org:Organization", "name": "Gesundheitsamt" },
+      "contactPoint": {
+        "fn": "Herr Mustermann",
+        "hasEmail": "muster@muster.de"
+      },
+      "theme": ["Gesundheit"],
+      "keyword": ["Corona"],
+      "distribution": [
+        {
+          "@type": "dcat:Distribution",
+          "title": "Corona Zahlen",
+          "description": "Aktuelle Corona Zahlen",
+          "format": "csv",
+          "downloadURL": "https://dkan.dhge-web.de/demo-files/corona_zahlen.csv"
+        }
+      ]
+    }
+  ]
+}
