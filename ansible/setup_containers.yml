@@ -7,7 +7,6 @@
     dkan_is_dev: no
 
     dkan_container_config_path: "/opt/dkan-container-configs"
-    dkan_demo_path: "/opt/dkan-demo-projekt"
     dkan_network_name: "dkan_network"
 
     frontend_git_repo: "https://github.com/jostaub/dhge-dkan-demo-frontend.git"
@@ -82,6 +81,7 @@
         name: dkan-traefik-router
         image: traefik
         container_default_behavior: compatibility
+        networks_cli_compatible: no
         restart_policy: always
         volumes:
           - "{{ dkan_container_config_path }}/traefik.yml:/etc/traefik/traefik.yml"
