@@ -74,6 +74,8 @@
       docker_compose:
         project_src: "{{ dkan_container_config_path }}"
         state: present
+        remove_orphans: yes
+        build: yes
 
     - name: start traefik router
       docker_container:
