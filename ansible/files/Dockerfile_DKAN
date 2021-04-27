@@ -2,5 +2,5 @@
 FROM drupal:9.0.11
 
 # install dupral and drush
-RUN COMPOSER_MEMORY_LIMIT=-1 composer require 'getdkan/dkan'; \
+RUN COMPOSER_MEMORY_LIMIT=-1 composer require 'getdkan/dkan:2.9' --update-no-dev; \
     COMPOSER_MEMORY_LIMIT=-1 composer require 'drush/drush' 
