@@ -8,6 +8,7 @@ services:
       context: .
       dockerfile: Dockerfile_Frontend
     image: dkanreactfrontend
+    restart: always
     ports:
       - "8088:80"
 
@@ -28,6 +29,7 @@ services:
   demo-files:
     hostname: demoweb
     image: nginx:stable-alpine
+    restart: always
     ports:
       - "8099:80"
 
@@ -52,6 +54,7 @@ services:
       context: .
       dockerfile: Dockerfile_DKAN
     image: dkanweb
+    restart: always
     ports:
       - "8077:80"
       - "443"
@@ -80,6 +83,7 @@ services:
   db:
     hostname: db
     image: mariadb
+    restart: always
     ports:
       - "3306"
 
