@@ -98,6 +98,7 @@
     - name: Check if website is allready setup
       uri:
         url: "https://{{ inventory_hostname }}/test"
+        validate_certs: no 
         return_content: no
         status_code:
           - 200
@@ -114,6 +115,6 @@
       when: url_check_result.redirected
 
     - name: enable dkan on site
-      shell: "docker exec dkan-container-configs_web_1 /bin/bash -c 'drush en dkan config_update_ui -y'"
+      shell: "docker exec dkan-container-configs_dkan-backend_1 /bin/bash -c 'drush en dkan config_update_ui -y'"
       when: url_check_result.redirected
            
